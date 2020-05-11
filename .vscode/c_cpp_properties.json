@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceRoot}/dependencies/openssl/include/openssl",
+                "${workspaceRoot}/dependencies/nghttp2/**",
+                "${workspaceRoot}/dependencies/googletest/*",
+                "${workspaceRoot}/src/headers",
+                "${workspaceRoot}/dependencies/boost_1_72_0/boost/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "__GNUC__=6",
+                "__cdecl=__attribute__((__cdecl__))"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceRoot}"
+                ]
+            },
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
