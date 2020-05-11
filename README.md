@@ -1,4 +1,4 @@
-# Perceptron++
+# Perceptroncpp
 
 A small experiment during my adventures trying to learn about machine learning
 algorithms. 
