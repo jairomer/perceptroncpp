@@ -31,5 +31,5 @@ sources for more information.
 - Try same problem with deeper neural networks and observe if the success rate gets any better.
 
 ### Sources
-https://towardsdatascience.com/perceptron-learning-algorithm-d5db0deab975
-https://appliedgo.net/perceptron/
+- https://towardsdatascience.com/perceptron-learning-algorithm-d5db0deab975
+- https://appliedgo.net/perceptron/
