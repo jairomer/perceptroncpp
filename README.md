@@ -6,7 +6,7 @@ algorithms.
 This is a very simple perceptron implementation that receives a 2D point and
 determines if it is over a specific line or not.
 
-The perceptron itself is implemented using generic programmin and may be 
+The perceptron itself is implemented using generic programming and may be 
 reused in other projects. However, an already classified dataset is needed 
 beforehand and the data must be linearly representable. Linear regression can 
 be a better alternative to this kind of system. 
