@@ -1,136 +1,83 @@
 #include <iostream>
 #include <random>
 #include <chrono>
+#include "perceptron_t.hpp"
+
 
 #define SLOPE  3
 #define OFFSET 2
+/**
+ * Once a seed has been initialized, it returns a random
+ * double value between 0 and 1.
+*/
+double get_rand() { return (double) std::rand() / RAND_MAX; }
 
-class perceptron_t
+double training_line(double x, double slope, double offset) { return slope*x + offset; }
+
+int32_t is_above_line(double x, double y) { return (y > training_line(x, SLOPE, OFFSET)) ? 1 : 0; }
+
+/**
+ * This is the training function. The perceptron's teacher so to speak.
+ *
+ * The training function delivers the correct or expected outputs
+ * for a given input on a supervised training setup.
+ *
+ * For this case we will use a simple linear function.
+*/
+void train_perceptron(perceptron_t& p, uint32_t iterations, double rate)
 {
-public:
-    double_t* weights;
-    double_t bias;
+     /* Initialize seed for random number generator. */
+    auto timestamp = std::chrono::system_clock::now().time_since_epoch();
+    auto seed = std::chrono::duration_cast<std::chrono::microseconds>(timestamp);
+    std::srand(seed.count());
 
-    double get_random_normalized()
-    {
-        return (double) std::rand() / RAND_MAX;
+    /* Start training loop. */
+    double point[2];
+    for (int i=0; i < iterations; i++) {
+        /* Generate random point. */
+        point[0] = get_rand()*201 - 101;
+        point[1] = get_rand()*201 - 101;
+        // Feed the point to the perceptron and evaluate the
+        // result.
+        int perceptron_answer = p.process(point);
+
+        int expected = is_above_line(point[0], point[1]);
+        double delta = expected - perceptron_answer;
+        //std::cout << delta << std::endl;
+        p.adjust(point, delta, rate);
     }
+}
 
-    perceptron_t()
-    {
-        /* Initialize seed for random number generator. */
-        auto timestamp = std::chrono::system_clock::now().time_since_epoch();
-        auto seed = std::chrono::duration_cast<std::chrono::microseconds>(timestamp);
-        std::srand(seed.count());
+double verify (perceptron_t& p, const uint32_t test_count)
+{
+    uint32_t correct_answers = 0;
+    double point[2];
+    for (int i=0; i < test_count; i++) {
+        /* Generate random point. */
+        point[0] = get_rand()*201 - 101;
+        point[1] = get_rand()*201 - 101;
 
-        /* Assign random weights. */
-        weights = new double[2];
-        weights[0] = get_random_normalized()*2-1;
-        weights[1] = get_random_normalized()*2-1;
-        bias = get_random_normalized()*2-1;
-    }
+        uint32_t p_response = p.process(point);
+        uint32_t t_response = is_above_line(point[0], point[1]);
 
-    ~perceptron_t() { delete [] weights; }
-
-    int32_t heaviside(double f) { return (f < 0 ) ? 0 : 1; }
-
-    /**
-     * Implements the core functionality of the perceptron.
-     * It weights the input signals, sums them up, adds the bias,
-     * and runs the result through the Heaviside Step function.
-    */
-    int32_t process(uint32_t x, uint32_t y)
-    {
-        double sum = bias;
-        sum += ((double) x) * weights[0];
-        sum += ((double) y) * weights[1];
-        return heaviside(sum);
-    }
-
-    /**
-     * During the learning phase, the perceptron adjusts the
-     * weights and the bias based on how much the perceptrons
-     * answer differs from the correct answer.
-    */
-    void adjust(int32_t x, int32_t y, double delta, double learning_rate)
-    {
-        if (x*weights[0] < 0)
-            weights[0] += ((double) x) * delta * learning_rate;
-        else
-            weights[0] -= ((double) x) * delta * learning_rate;
-
-        if (x*weights[1] < 0)
-            weights[1] += ((double) y) * delta * learning_rate;
-        else
-            weights[1] -= ((double) y) * delta * learning_rate;
-
-        bias += delta * learning_rate;
-    }
-
-    /**
-     * This is the training function. The perceptron's teacher.
-     *
-     * The training function delivers the correct or expected outputs
-     * for a given input on a supervised training setup.
-     *
-     * For this case we will use a simple linear function.
-    */
-    int32_t training_line(int32_t x) { return SLOPE*x + OFFSET; }
-
-    int32_t is_above_line(int32_t x, int32_t y) { return (y > training_line(x)) ? 1 : 0; }
-
-    void train_perceptron(uint32_t iterations, double rate)
-    {
-        for (int i=0; i < iterations; i++) {
-            /* Generate random point. */
-
-            int32_t x = get_random_normalized()*20001 - 10001;
-            int32_t y = get_random_normalized()*20001 - 10001;
-
-            // Feed the point to the perceptron and evaluate the
-            // result.
-            int perceptron_answer = this->process(x, y);
-            int expected = is_above_line(x, y);
-            double delta = expected - perceptron_answer;
-            //std::cout << delta << std::endl;
-            this->adjust(x, y, delta, rate);
+        if ( p_response == t_response ) {
+            correct_answers++;
         }
     }
-
-    double verify (const uint32_t test_count)
-    {
-        uint32_t correct_answers = 0;
-        for (int i=0; i < test_count; i++) {
-            uint x = get_random_normalized()*20001 - 10001;
-            uint y = get_random_normalized()*20001 - 10001;
-
-            uint32_t p_response = this->process(x, y);
-            uint32_t t_response = is_above_line(x, y);
-
-            if ( p_response == t_response ) {
-                correct_answers++;
-            }
-        }
-        return  ((double)correct_answers/(double)test_count);
-    }
-};
-
-
+    return  ((double)correct_answers/(double)test_count);
+}
 
 int main(int argc, char** argv) {
 
     /* Test 1: Optimize single perceptron. */
-    perceptron_t perc;
+    perceptron_t perc(2);
 
-    std::cout << perc.verify(1000) << std::endl;
-    std::cout << perc.weights[0] << " " << perc.weights[1] << std::endl;
-
+    std::cout << verify(perc, 1000) << std::endl;
     /* Do not stop training until a consistent 95% success rate is achieved.*/
-    while (perc.verify(100) < 0.80)
-        perc.train_perceptron(10000, 0.01);
+    while (verify(perc, 100) < 1)
+        train_perceptron(perc, 10000, 0.001);
 
-    std::cout << perc.verify(1000) << std::endl;
-    std::cout << perc.weights[0] << " " << perc.weights[1] << std::endl;
+    std::cout << verify(perc, 1000) << std::endl;
     std::cout << "--------------" << std::endl;
     /* Test 2_ Try different hyperparameters and observe the results. */
 
@@ -138,14 +85,16 @@ int main(int argc, char** argv) {
 
     double learning_rates[] = {0.5, 0.1, 0.01, 0.001}; // range > 0 and < 1
 
-    perceptron_t ps[16];
+    perceptron_t* ps[16];
     for (int it=0; it<4; it++) {
         for (int lr=0; lr<4; lr++) {
-            ps[it + lr*4].train_perceptron(iterations[it], learning_rates[lr]);
+            ps[it + lr*4] = new perceptron_t(2);
+            train_perceptron(*ps[it+lr*4], iterations[it], learning_rates[lr]);
             std::cout << "iter: " << iterations[it] << std::endl;
             std::cout << "rate: " << learning_rates[lr] << std::endl;
-            std::cout << "success ratio: " << ps[it+lr*4].verify(1000) << std::endl;
+            std::cout << "success ratio: " << verify(*ps[it+lr*4], 1000) << std::endl;
             std::cout << "---------------" << std::endl;
+            delete ps[it + lr*4];
         }
     }
 
