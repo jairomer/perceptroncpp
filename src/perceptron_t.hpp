@@ -74,11 +74,9 @@ public:
         assert(input.size() == inputs_);
 
         for (int i=0; i<inputs_; i++) {
-            if (input[i] < 0)
-                weights_[i] += ((double) input[i]) * delta * learning_rate;
-            else
-                weights_[i] -= ((double) input[i]) * delta * learning_rate;
+            weights_[i] -= ((double) std::abs(input[i])) * delta * learning_rate;
         }
+        
         bias_ += delta * learning_rate;
     }
 };
