@@ -3,7 +3,8 @@
 
 #include <random>
 #include <chrono>
-
+#include <array>
+#include <assert.h>
 class perceptron_t
 {
 private:
@@ -12,9 +13,9 @@ private:
     uint32_t heaviside(double f) { return (f < 0 ) ? 0 : 1; }
 
 public:
-    double*     _weights;
-    uint32_t    _inputs;
-    double      _bias;
+    double*     weights_;
+    uint32_t    inputs_;
+    double      bias_;
     /**
      * Initializes the perceptron for a given non-negative input count.
      * Sets up seed for the pseudorandom number generator.
@@ -27,15 +28,15 @@ public:
         std::srand(seed.count());
 
         /* Assign random weights. */
-        _inputs = number_of_inputs;
-        _weights = new double[number_of_inputs];
+        inputs_ = number_of_inputs;
+        weights_ = new double[number_of_inputs];
 
-        for (int i=0; i<_inputs; i++){
-            _weights[i] = get_rand()*2-1;
+        for (int i=0; i<inputs_; i++){
+            weights_[i] = get_rand()*2-1;
         }
-        _bias = get_rand()*2-1;
+        bias_ = get_rand()*2-1;
     }
-    ~perceptron_t() { delete [] _weights; }
+    ~perceptron_t() { delete [] weights_; }
 
     /**
      * Implements the core functionality of the perceptron.
@@ -48,12 +49,14 @@ public:
      * Given that a perceptron can only clasify into two classes,
      * it will return either 1 or 0 respectively for each class.
     */
-    template <typename T>
-    uint32_t process( T* input)
+    template<class TContainer>
+    uint32_t process(TContainer& input)
     {
-        double sum = _bias;
-        for (int i=0; i < _inputs; i++)
-            sum += (double) input[i] * _weights[i];
+        assert(input.size() == inputs_);
+
+        double sum = bias_;
+        for (int i=0; i < inputs_; i++)
+            sum += (double) input[i] * weights_[i];
         return heaviside(sum);
     }
 
@@ -65,16 +68,18 @@ public:
      * The size of the input array given should be as large as
      * the number of inputs given during initialization.
     */
-    template <typename T>
-    void adjust(T* input, double delta, double learning_rate)
+    template <class TContainer>
+    void adjust(TContainer& input, double delta, double learning_rate)
     {
-        for (int i=0; i<_inputs; i++) {
+        assert(input.size() == inputs_);
+
+        for (int i=0; i<inputs_; i++) {
             if (input[i] < 0)
-                _weights[i] += ((double) input[i]) * delta * learning_rate;
+                weights_[i] += ((double) input[i]) * delta * learning_rate;
             else
-                _weights[i] -= ((double) input[i]) * delta * learning_rate;
+                weights_[i] -= ((double) input[i]) * delta * learning_rate;
         }
-        _bias += delta * learning_rate;
+        bias_ += delta * learning_rate;
     }
 };
 

@@ -32,7 +32,9 @@ void train_perceptron(perceptron_t& p, uint32_t iterations, double rate)
     std::srand(seed.count());
 
     /* Start training loop. */
-    double point[2];
+    std::vector<double> point;
+    point.push_back(0);
+    point.push_back(0);
     for (int i=0; i < iterations; i++) {
         /* Generate random point. */
         point[0] = get_rand()*201 - 101;
@@ -51,7 +53,10 @@ void train_perceptron(perceptron_t& p, uint32_t iterations, double rate)
 double verify (perceptron_t& p, const uint32_t test_count)
 {
     uint32_t correct_answers = 0;
-    double point[2];
+    std::vector<double> point;
+    point.push_back(0);
+    point.push_back(0);
+
     for (int i=0; i < test_count; i++) {
         /* Generate random point. */
         point[0] = get_rand()*201 - 101;
